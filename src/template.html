@@ -18,7 +18,7 @@ button:disabled{opacity:.4;cursor:default}
 .top{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--mute);margin-bottom:8px}
 .bar{height:5px;background:var(--line);border-radius:3px;overflow:hidden;margin-bottom:12px}.bar i{display:block;height:100%;background:var(--pri)}
 .tags span{display:inline-block;font-size:11.5px;background:var(--pri);color:#fff;border-radius:4px;padding:0 6px;margin-right:4px}
-.tags span.v{background:var(--var)}.md{font-size:10.5px;border-radius:4px;padding:0 4px;margin-left:2px;background:#eef1f6;color:#556}.chip.on .md{background:rgba(255,255,255,.22);color:#fff}.md.vary{color:var(--var)}.tags span.g{background:#eef1f6;color:var(--mute)}
+.orig{float:right;font-size:11.5px;color:var(--mute);margin-left:8px}.origh{font-weight:400;font-size:12.5px;color:var(--mute)}.tags span.v{background:var(--var)}.md{font-size:10.5px;border-radius:4px;padding:0 4px;margin-left:2px;background:#eef1f6;color:#556}.chip.on .md{background:rgba(255,255,255,.22);color:#fff}.md.vary{color:var(--var)}.tags span.g{background:#eef1f6;color:var(--mute)}
 .stem{margin:10px 0}.stem div{margin:2px 0}
 .lab{display:grid;grid-template-columns:1fr 1fr;gap:0 14px;background:#f6f7f9;border:1px solid var(--line);border-radius:6px;padding:6px 10px;margin:6px 0;font-size:13.5px}
 @media(max-width:560px){.lab{grid-template-columns:1fr}}
@@ -44,7 +44,7 @@ const D=JSON.parse(document.getElementById('data').textContent);
 const CIR='①②③④⑤';
 const LS={get(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 let wrong=new Set(LS.get('endo_wrong',[]));let wdyn=LS.get('endo_wrong_dyn',{});
-const st={chs:new Set(D.ch.map(c=>c.id)),kind:'all',order:'shuffle',n:20};
+const st={chs:new Set(D.ch.map(c=>c.id)),kind:'all',order:'shuffle',n:20,mix:LS.get('endo_mix',true)};
 let run=null;
 const $=s=>document.querySelector(s);const app=$('#app');
 const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -68,24 +68,28 @@ function home(){
  <div class="lbl">문제 종류</div><div class="row" id="kind">${[['all','기출+변형'],['past','기출만'],['var','예상 변형만'],['wrong',`오답노트 (${wrong.size+Object.keys(wdyn).length})`]].map(([k,t])=>`<button class="chip ${st.kind===k?'on':''}" data-k="${k}">${t}</button>`).join('')}</div>
  <div class="lbl">순서 · 문항 수</div><div class="row" id="ord">${[['shuffle','무작위'],['seq','문제집 순서']].map(([k,t])=>`<button class="chip ${st.order===k?'on':''}" data-o="${k}">${t}</button>`).join('')}
  <span style="width:12px"></span>${[10,20,50,0].map(n=>`<button class="chip ${st.n===n?'on':''}" data-n="${n}">${n||'전부'}</button>`).join('')}</div>
+ <div class="lbl">선지 순서</div><div class="row">${[[true,'섞기'],[false,'원래 순서']].map(([k,t])=>`<button class="chip ${st.mix===k?'on':''}" data-m="${k}">${t}</button>`).join('')}</div>
  <div class="row" style="margin-top:16px;justify-content:space-between"><span class="small">선택된 고정 문항 ${p.length}개${(st.kind==='all'||st.kind==='var')&&varyChs().size?' + 매번 새로 만드는 변형 문항':''}</span><button class="go" id="start" ${p.length?'':'disabled'}>시작</button></div></div>
  <div class="panel small"><b>반복</b> 표시 교수님(전제열·박정희·홍란)은 해마다 같은 문항을 그대로 내셔서 기출만 나옵니다. <b>변형</b> 표시 교수님은 해마다 수치·선지·증례를 바꾸셔서, 기출과 함께 예상 변형 문항이 나오고 그중 일부는 시작할 때마다 수치·선지를 새로 만들어 매번 달라집니다.<br>기출 문항의 연도 태그는 같은 선지·정답으로 출제된 해를 모두 표시합니다. 보라색 <b style="color:var(--var)">변형</b> 문항은 기출을 바탕으로 조건·선지를 바꾼 예상 문제입니다. 틀린 문제는 이 브라우저의 오답노트에 저장됩니다.</div>`;
  app.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{const c=+b.dataset.c;if(st.chs.size===D.ch.length){st.chs=new Set([c])}else{st.chs.has(c)?st.chs.delete(c):st.chs.add(c);if(!st.chs.size)st.chs=new Set(D.ch.map(c=>c.id))}home()});
  app.querySelector('[data-all]').onclick=()=>{st.chs=new Set(D.ch.map(c=>c.id));home()};
  app.querySelectorAll('[data-k]').forEach(b=>b.onclick=()=>{st.kind=b.dataset.k;home()});
  app.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{st.order=b.dataset.o;home()});
+ app.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{st.mix=b.dataset.m==='true';LS.set('endo_mix',st.mix);home()});
  app.querySelectorAll('[data-n]').forEach(b=>b.onclick=()=>{st.n=+b.dataset.n;home()});
  $('#start').onclick=()=>{run={q:build(),i:0,ans:{}};show()};
 }
 function tags(x){if(x.v)return `<span class="v">변형</span><span class="g">${esc(x.N)}</span>`;return x.keys.map(k=>`<span>20${k.slice(0,2)} #${k.slice(3).replace('-1','')}</span>`).join('')+`<span class="g">${esc(x.g)}</span>`}
 function show(){
  const x=run.q[run.i],a=run.ans[x.id];const done=a!==undefined;
+ if(!run.perm)run.perm={};if(!run.perm[x.id])run.perm[x.id]=st.mix?shuffle(x.o.map((_,i)=>i)):x.o.map((_,i)=>i);
+ const P=run.perm[x.id],moved=P.some((v,i)=>v!==i);
  app.innerHTML=`<div class="panel"><div class="top"><span>${run.i+1} / ${run.q.length}</span><span>맞힌 문제 ${Object.entries(run.ans).filter(([id,v])=>v===run.q.find(q=>q.id===id).a).length}</span></div>
  <div class="bar"><i style="width:${(run.i+1)/run.q.length*100}%"></i></div>
  <div class="tags">${tags(x)}</div><div class="stem">${x.stem}</div>
  ${x.img.map(s=>`<div class="img"><img src="${s}" alt="문항 그림"></div>`).join('')}
- <div>${x.o.map((o,i)=>`<button class="opt ${done?(i===x.a?'ok':(i===a?'bad':'')):''}" data-i="${i}" ${done?'disabled':''}><b>${CIR[i]}</b>${esc(o)}</button>`).join('')}</div>
- ${done?`<div class="ex ${a===x.a?'':'wrong'}"><div class="h">${a===x.a?'정답':'오답'} · 정답 ${x.v?CIR[x.a]:esc(x.A)}</div><div>${esc(x.E)}</div>${x.N&&!x.v?`<div class="note">※ ${esc(x.N)}</div>`:''}<div class="src">근거: ${esc(x.B)}</div></div>`:''}
+ <div>${P.map((i,pos)=>`<button class="opt ${done?(i===x.a?'ok':(i===a?'bad':'')):''}" data-i="${i}" ${done?'disabled':''}><b>${CIR[pos]}</b>${esc(x.o[i])}${done&&moved?`<span class="orig">원래 ${CIR[i]}</span>`:''}</button>`).join('')}</div>
+ ${done?`<div class="ex ${a===x.a?'':'wrong'}"><div class="h">${a===x.a?'맞았습니다':'틀렸습니다'} · 정답 ${CIR[P.indexOf(x.a)]}${moved?` <span class="origh">(원래 번호 ${x.v?CIR[x.a]:esc(x.A)} · 해설의 선지 번호는 원래 순서 기준)</span>`:(x.v?'':(x.A.length>1?` <span class="origh">${esc(x.A)}</span>`:''))}</div><div>${esc(x.E)}</div>${x.N&&!x.v?`<div class="note">※ ${esc(x.N)}</div>`:''}<div class="src">근거: ${esc(x.B)}</div></div>`:''}
  <div class="nav"><button class="ghost" id="home">처음으로</button><span><button class="ghost" id="prev" ${run.i?'':'disabled'}>이전</button> <button class="go" id="next" ${done?'':'disabled'}>${run.i+1<run.q.length?'다음':'결과 보기'}</button></span></div></div>`;
  app.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;run.ans[x.id]=i;if(x.dyn){if(i===x.a)delete wdyn[x.id];else wdyn[x.id]=x;LS.set('endo_wrong_dyn',wdyn)}else{if(i===x.a)wrong.delete(x.id);else wrong.add(x.id);LS.set('endo_wrong',[...wrong])}show()});
  $('#home').onclick=home;$('#prev').onclick=()=>{run.i--;show()};
