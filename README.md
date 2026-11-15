@@ -7,7 +7,8 @@
 - `data/past.json` — 기출 문항 (장·소단원, 지문 HTML, 선지, 정답 인덱스, 해설, 근거)
 - `data/variants.json` — 예상 변형 문항
 - `figs/` — 문항 그림
-- `src/template.html` — 퀴즈 UI 템플릿 (`__DATA__` 자리에 데이터가 들어감)
+- `src/template.html` — 퀴즈 UI 템플릿 (`__DATA__`·`__GEN__` 자리에 데이터와 생성기가 들어감)
+- `src/gen.js` — 시작할 때마다 수치·선지를 새로 만드는 변형 문항 생성기(증례 생성기 + 개념 문장 은행)
 - `tools/build.py` — `python3 tools/build.py` 로 index.html 재생성
 
 ## 문항 데이터 형식
@@ -15,3 +16,6 @@
 {"id":"23-01","keys":["23-01"],"ch":11,"g":"소단원","stem":"<div>…</div>","o":["…"],"a":3,"A":"④","E":"해설","B":"근거","N":"비고","img":["figs/23-01.jpg"],"v":false}
 ```
 `a`는 0부터 시작하는 정답 인덱스, `v`가 true이면 변형 문항입니다.
+
+## 교수님별 출제 경향
+`data/past.json`의 `ch[].mode`가 `repeat`(해마다 같은 문항 → 기출만 표시) 또는 `vary`(해마다 변형 → 기출 + 변형 + 자동 생성 문항)입니다. 현재 반복형: 전제열, 박정희, 홍란.
